@@ -373,13 +373,13 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
         } as React.CSSProperties
       }
     >
-      <LabubuImage imageUrl={imageUrl} name={name} />
+      <MemoizedLabubuImage imageUrl={imageUrl} name={name} />
 
-      <LabubuBackground backgroundImg={backgroundImg} />
+      <MemoizedLabubuBackground backgroundImg={backgroundImg} />
 
       <div className='card-body'>
         <div className='cart-item-name'>
-          <LabubuInfo name={name} />
+          <MemoizedLabubuInfo name={name} />
 
           {isFlashSale && (
             <FlashSaleCounter formattedCounter={formattedCounter} />
@@ -388,9 +388,9 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
         </div>
 
         <div className='cart-item-price'>
-          <LabubuPrice labubuPriceData={memoizedLabubuPriceData} />
+          <MemoizedLabubuPrice labubuPriceData={memoizedLabubuPriceData} />
 
-          <PlaceABidButton onClick={onClick} />
+          <MemoizedPlaceABidButton onClick={memoizedOnClick} />
         </div>
       </div>
 
