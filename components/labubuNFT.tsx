@@ -293,6 +293,34 @@ const FlashSaleBanner = () => {
 };
 const MemoizedFlashSaleBanner = memo(FlashSaleBanner);
 
+const handleAddToCart = async (productId: number): Promise<number | null> => {
+  const sessionId = sessionStorage.getItem('your-session-id') as string;
+
+  try {
+    const res = await fetch('/api/cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Session-Id': sessionId,
+      },
+      body: JSON.stringify({
+        productId: productId,
+        quantity: 1,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to add item to cart');
+    }
+
+    const data = await res.json();
+    return data.data.product.stockQuantity;
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    return null;
+  }
+};
+
 const LabubuNFT: FC<LabubuNFTProps> = ({
   isFlashSale,
   name,
@@ -302,6 +330,7 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
   price,
   quantity,
 }) => {
+  const [stockQuantity, setStockQuantity] = useState(quantity);
   const [timeLeft, setTimeLeft] = useState({
     hours: 7,
     minutes: 4,
@@ -366,10 +395,41 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
     [name, price, isFlashSale]
   );
 
-  const onClick = () => console.log('Place a Bid clicked');
-  const memoizedOnClick = useCallback(() => {
+  const onClick = async () => {
     console.log('Place a Bid clicked');
-  }, []);
+    const productIdInString = name.split('#').pop();
+
+    const productId =
+      productIdInString && typeof productIdInString === 'string'
+        ? parseInt(name.split('#').pop() as string)
+        : null;
+
+    if (!productId) return;
+
+    const newStockQuantity = await handleAddToCart(productId);
+
+    if (newStockQuantity === null) return;
+
+    setStockQuantity(newStockQuantity);
+  };
+
+  const memoizedOnClick = useCallback(async () => {
+    console.log('Place a Bid clicked');
+    const productIdInString = name.split('#').pop();
+
+    const productId =
+      productIdInString && typeof productIdInString === 'string'
+        ? parseInt(name.split('#').pop() as string)
+        : null;
+
+    if (!productId) return;
+
+    const newStockQuantity = await handleAddToCart(productId);
+
+    if (newStockQuantity === null) return;
+
+    setStockQuantity(newStockQuantity);
+  }, [name]);
 
   const labubuPriceData = {
     price,
@@ -407,7 +467,6 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
             <MemoizedStockInfo quantity={quantity} />
             {isFlashSale && (
               <FlashSaleCounter formattedCounter={formattedCounter} />
-              // <FlashSaleCollocation isFlashSale={isFlashSale} />
             )}
           </div>
         </div>
@@ -418,18 +477,6 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
           <MemoizedPlaceABidButton onClick={memoizedOnClick} />
         </div>
       </div>
-
-      {/* <FlashSaleBadgeWithCounterWrapper
-        labubuInfoSection={<LabubuInfo name={name} />}
-        cartItemPriceSection={
-          <div className='cart-item-price'>
-            <LabubuPrice labubuPriceData={memoizedLabubuPriceData} />
-
-            <PlaceABidButton onClick={onClick} />
-          </div>
-        }
-        isFlashSale={isFlashSale}
-      /> */}
     </div>
   );
 };
