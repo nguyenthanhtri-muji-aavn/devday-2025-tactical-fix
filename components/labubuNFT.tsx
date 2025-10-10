@@ -309,4 +309,4 @@ const LabubuNFT: FC<LabubuNFTProps> = ({
   );
 };
 
-export default LabubuNFT;
+export default memo(LabubuNFT);
